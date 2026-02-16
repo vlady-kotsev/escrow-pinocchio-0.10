@@ -1,3 +1,7 @@
+[tasks.cleanup]
+command = "rm"
+args = ["-rf", "${CARGO_MAKE_WORKING_DIRECTORY}/target"]
+
 [tasks.build]
 command = "cargo-build-sbf"
 args = ["--tools-version", "v1.52", "--debug", "--arch", "v1"]
@@ -30,6 +34,7 @@ args = ["${CARGO_MAKE_WORKING_DIRECTORY}/coverage/index.html"]
 
 [tasks.test-coverage]
 run_task = { name = [
+    "cleanup",
     "build",
     "run-tests",
     "gencov",

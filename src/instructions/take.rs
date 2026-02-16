@@ -177,7 +177,7 @@ impl<'a> Take<'a> {
         ProgramAccount::check::<Escrow, 3>(
             self.accounts.escrow,
             Some(escrow_seeds),
-            Some(escrow.get_bump()),
+            Some(*escrow.get_bump()),
             Escrow::LEN,
         )?;
 
@@ -189,7 +189,7 @@ impl<'a> Take<'a> {
             pinocchio_token::state::TokenAccount::from_account_view(self.accounts.vault)?.amount();
 
         let seed_binding = self.data.seed.to_le_bytes();
-        let bump_binding = &[escrow.get_bump()];
+        let bump_binding = &[*escrow.get_bump()];
         let seeds = &[
             Seed::from(ESCROW_SEED),
             Seed::from(self.accounts.maker.address().as_ref()),
@@ -210,7 +210,7 @@ impl<'a> Take<'a> {
             from: self.accounts.taker_b_ata,
             to: self.accounts.maker_b_ata,
             authority: self.accounts.taker,
-            amount: escrow.get_receive(),
+            amount: *escrow.get_receive(),
         }
         .invoke()?;
 

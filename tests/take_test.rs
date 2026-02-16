@@ -70,7 +70,6 @@ mod take_test {
             &1000u64.to_le_bytes(),
             &SEED.to_le_bytes(),
             &[escrow_bump],
-            &[0u8; 7], //  padding
         ]
         .concat();
 

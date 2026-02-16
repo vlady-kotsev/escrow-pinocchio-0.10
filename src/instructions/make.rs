@@ -3,9 +3,10 @@ use std::slice::from_raw_parts_mut;
 use pinocchio::{AccountView, ProgramResult, cpi::Seed, error::ProgramError};
 use pinocchio_system::ID as SYSTEM_PROGRAM_ID;
 use pinocchio_token::instructions::Transfer;
-use wincode::{SchemaRead, SchemaWrite, deserialize, serialize};
+use wincode::{SchemaRead, SchemaWrite, deserialize, deserialize_mut};
 
 use crate::{
+    EscrowMut,
     constants::ESCROW_SEED,
     instructions::helpers::{AssociatedToken, Mint, ProgramAccount},
     state::Escrow,
@@ -144,24 +145,24 @@ impl<'a> Make<'a> {
             self.accounts.token_program,
         )?;
 
-        let escrow = Escrow::new(
-            self.accounts.maker.address(),
-            self.accounts.mint_a.address(),
-            self.accounts.mint_b.address(),
-            self.data.receive,
-            self.data.seed,
-            self.data.escrow_bump,
-        );
-
         let escrow_account_data = unsafe {
             from_raw_parts_mut(
                 self.accounts.escrow.data_ptr(),
                 self.accounts.escrow.data_len(),
             )
         };
-        let escrow_bytes =
-            serialize::<Escrow>(&escrow).map_err(|_| ProgramError::InvalidInstructionData)?;
-        escrow_account_data[..escrow_bytes.len()].copy_from_slice(&escrow_bytes);
+
+        let mut escrow = deserialize_mut::<EscrowMut>(escrow_account_data)
+            .map_err(|_| ProgramError::InvalidInstructionData)?;
+
+        escrow.set_inner(
+            self.accounts.maker.address(),
+            self.accounts.mint_a.address(),
+            self.accounts.mint_b.address(),
+            &self.data.receive,
+            &self.data.seed,
+            &self.data.escrow_bump,
+        );
 
         Transfer {
             from: self.accounts.maker_ata,
