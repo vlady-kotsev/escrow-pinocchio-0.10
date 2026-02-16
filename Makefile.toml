@@ -1,0 +1,38 @@
+[tasks.build]
+command = "cargo-build-sbf"
+args = ["--tools-version", "v1.52", "--debug", "--arch", "v1"]
+
+[tasks.run-tests]
+command = "cargo"
+args = ["test"]
+
+[tasks.gencov]
+command = "sbpf-coverage"
+args = [
+    "--src-path=${CARGO_MAKE_WORKING_DIRECTORY}/src",
+    "--sbf-path=${CARGO_MAKE_WORKING_DIRECTORY}/target/deploy",
+    "--sbf-trace-dir=${CARGO_MAKE_WORKING_DIRECTORY}/target/sbf/trace",
+]
+
+[tasks.genhtml]
+command = "genhtml"
+args = [
+    "--output-directory",
+    "coverage",
+    "${CARGO_MAKE_WORKING_DIRECTORY}/target/sbf/trace/*.lcov",
+    "--rc",
+    "branch_coverage=1",
+]
+
+[tasks.opencov]
+command = "open"
+args = ["${CARGO_MAKE_WORKING_DIRECTORY}/coverage/index.html"]
+
+[tasks.test-coverage]
+run_task = { name = [
+    "build",
+    "run-tests",
+    "gencov",
+    "genhtml",
+    "opencov",
+], parallel = false }
