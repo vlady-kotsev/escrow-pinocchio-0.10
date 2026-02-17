@@ -9,6 +9,8 @@ args = ["--tools-version", "v1.52", "--debug", "--arch", "v1"]
 [tasks.run-tests]
 command = "cargo"
 args = ["test"]
+[tasks.run-tests.env]
+SBF_OUT_DIR = "target/deploy"
 
 [tasks.gencov]
 command = "sbpf-coverage"

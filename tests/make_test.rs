@@ -18,7 +18,7 @@ mod make_test {
     const SEED: u64 = 1;
 
     fn setup() -> (Mollusk, Vec<(Address, Account)>, Instruction, Vec<u8>) {
-        let mut mollusk = Mollusk::new_debuggable(&PROGRAM_ADDRESS, "target/deploy/escrow", true);
+        let mut mollusk = Mollusk::new_debuggable(&PROGRAM_ADDRESS, "escrow", true);
         mollusk_svm_programs_token::token::add_program(&mut mollusk);
         mollusk_svm_programs_token::associated_token::add_program(&mut mollusk);
 
@@ -189,7 +189,7 @@ mod make_test {
         .1
         .data;
 
-        mollusk.process_and_validate_instruction(
+        let result = mollusk.process_and_validate_instruction(
             &instruction,
             &accounts,
             &[
@@ -205,6 +205,9 @@ mod make_test {
                     .build(),
             ],
         );
+
+        assert!(result.program_result.is_ok());
+        println!("CUs (take) consumed: {}", result.compute_units_consumed);
     }
 
     #[test]
