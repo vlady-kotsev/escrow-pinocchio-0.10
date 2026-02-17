@@ -207,7 +207,7 @@ mod make_test {
         );
 
         assert!(result.program_result.is_ok());
-        println!("CUs (take) consumed: {}", result.compute_units_consumed);
+        println!("CUs (make) consumed: {}", result.compute_units_consumed);
     }
 
     #[test]
