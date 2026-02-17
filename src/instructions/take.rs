@@ -160,14 +160,15 @@ impl<'a> Take<'a> {
             self.data.maker_b_ata_bump,
         )?;
 
-        let escrow_data = unsafe {
+        let escrow_account_data = unsafe {
             from_raw_parts(
                 self.accounts.escrow.data_ptr(),
                 self.accounts.escrow.data_len(),
             )
         };
-        let escrow =
-            deserialize::<Escrow>(escrow_data).map_err(|_| ProgramError::InvalidInstructionData)?;
+
+        let escrow = deserialize::<Escrow>(escrow_account_data)
+            .map_err(|_| ProgramError::InvalidInstructionData)?;
 
         let escrow_seeds: &[&[u8]; 3] = &[
             ESCROW_SEED,
@@ -177,11 +178,11 @@ impl<'a> Take<'a> {
         ProgramAccount::check::<Escrow, 3>(
             self.accounts.escrow,
             Some(escrow_seeds),
-            Some(*escrow.get_bump()),
+            Some(*escrow.bump),
             Escrow::LEN,
         )?;
 
-        if escrow.get_mint_b().ne(self.accounts.mint_b.address()) {
+        if escrow.mint_b.ne(self.accounts.mint_b.address()) {
             return Err(ProgramError::InvalidAccountData);
         }
 
@@ -189,7 +190,7 @@ impl<'a> Take<'a> {
             pinocchio_token::state::TokenAccount::from_account_view(self.accounts.vault)?.amount();
 
         let seed_binding = self.data.seed.to_le_bytes();
-        let bump_binding = &[*escrow.get_bump()];
+        let bump_binding = &[*escrow.bump];
         let seeds = &[
             Seed::from(ESCROW_SEED),
             Seed::from(self.accounts.maker.address().as_ref()),
@@ -210,7 +211,7 @@ impl<'a> Take<'a> {
             from: self.accounts.taker_b_ata,
             to: self.accounts.maker_b_ata,
             authority: self.accounts.taker,
-            amount: *escrow.get_receive(),
+            amount: *escrow.receive,
         }
         .invoke()?;
 
